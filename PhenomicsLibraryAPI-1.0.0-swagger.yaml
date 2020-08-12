@@ -1,0 +1,405 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: HDR UK's Phenomics Library API
+  description: HDR UK's Phenomics Library API Design Document
+  termsOfService: https://www.phenomicslibrary.com/terms-of-use
+  contact:
+    name: Shahzad Mumtaz
+    url: https://www.phenomicslibrary.com
+    email: shahzadmumtaz22@gmail.com
+  license:
+    name: Phenomics Library Licence
+    url: https://www.phenomicslibrary.com
+servers: 
+  - url: https://dev.phenomicslibrary.com/v1
+    description: Development server
+  - url: https://prod.phenomicslibrary.com/v1
+    description: Production server
+tags: 
+  - name: Phenomics
+paths:
+  /phenotypes:
+    get:
+      tags:
+        - Phenomics
+      summary: List Phenotypes  
+      description: Returns information about all the phenotype definitions in the library
+      operationId: list-phenotypes
+      parameters:
+        - name: limit
+          in: query
+          description: The number of phenotypes returned 
+          schema: 
+            type: integer
+            minimum: 1
+            maximum: 20
+            example: 2
+        - name: offset
+          in: query
+          description: The pages to return phenotypes information
+          schema: 
+            type: integer
+            minimum: 1
+            maximum: 20
+            example: 2
+      responses:
+        200:
+          description: Successful pull of phenotype information
+          content: 
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Phenotype'
+            application/xml:
+              schema:
+                type: array
+                items: 
+                  $ref: '#/components/schemas/Phenotype'
+        400:
+          description: A bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: The specified resource was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post: 
+      tags:
+        - Phenomics
+      summary: Create Phenotype  
+      description: Creates a new phenotype in the library
+      operationId: create-phenotype
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: 
+              $ref: '#/components/schemas/Phenotype'
+          application/xml:
+            schema: 
+              $ref: '#/components/schemas/Phenotype'  
+      responses:
+        200:
+          description: Succesfully added new phenotype data   
+  /phenotypes/search:
+    get:
+      tags:
+        - Phenomics
+      summary: Search Phenotypes  
+      description: This helps in returning all the phenotypes that matches search string in the contents of the phenotypes stored in knowledge base
+      operationId: search-phenotype
+      parameters:
+        - name: q
+          in: query
+          description: a search string that searches for all the phenotypes contents that matches a given search string
+          required: true
+          schema: 
+            type: string
+            example: Heart
+      responses:
+        200:
+          description: successful retrieval of a phenotype
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResults'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/SearchResults' 
+        400:
+          description: A bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: The specified resource was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /phenotypes/{id}:
+    get:
+      tags: 
+        - Phenomics
+      summary: Get Phenotype
+      description: Gets information about specific phenotype
+      operationId: get-phenotype
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: The ID of the phenotype
+          schema: 
+            type: string
+            example: null
+      responses:
+        200:
+          description: successful retrieval of a phenotype
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Phenotype'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Phenotype'
+        400:
+          description: A bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: The specified resource was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - Phenomics
+      summary: Delete Phenotype  
+      description: Removes a specific phenotype from library
+      operationId: delete-phenotype
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: The ID of the phenotype
+          schema: 
+            type: string
+            example: 
+      responses:
+        202:
+          description: successful removal of a phenotype
+        400:
+          description: A bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: The specified resource was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas: 
+    SearchResults:
+      description: Array of phenotypes that matches the search string in the contents of the phenotypes library
+      type: object
+      properties:
+        count: 
+          type: integer
+        message: 
+          type: string
+        results:
+          type: array
+          items: 
+            $ref: '#/components/schemas/Phenotype'
+    Phenotype:
+      description: Model having phenotype information
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/PhenotypeMetadata'
+        - $ref: '#/components/schemas/PhenotypeContent'
+      x-examples: {}      
+    PhenotypeMetadata:
+      description: Model having metadata information of a phenotype
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/shortuuid'
+        title:
+          type: string 
+          example: Abdominal Hernia
+        name:
+          type: string
+          example: Abdominal Hernia
+        type:
+          type: string
+          example: Disease or Syndrome
+        group:
+          type: string
+          example: Digestive
+        datamodalities:
+          type: array
+          items:
+            type: string
+        dataSources:
+          type: array
+          items:
+            type: string
+          example: [Clinical Practice Research Datalink GOLD, Hospital Episode Statistics APC for CPRD GOLD]  
+        clinicalTerminologies:
+          type: array
+          items:
+            type: string
+          example: [OPCS-4, Read Version 2, ICD-10]
+        validation:
+          type: array
+          items:
+            type: string
+          example: 
+            - cross-source  
+        codeListSummary:
+          type: array
+          items: 
+            type: string
+          example: 
+            - kuan_hernia_abdo_UmxTP7n8pMNA9ykfrhp5hZ_Read2.csv
+            - kuan_h hernia_abdo_UmxTP7n8pMNA9ykfrhp5hZ_ICD10.csv
+            - kuan_hernia_abdo_UmxTP7n8pMNA9ykfrhp5hZ_OPCS4.csv
+        validEventDataRange:
+          type: string
+          example: '01/01/1999 - 01/07/2016'
+        sex:
+          type: array
+          items:
+            type: string
+          example: [Female, Male]  
+        author:
+          type: array
+          items:
+            type: string
+            example: 
+              - Kuan V  
+              - Denaxas S 
+              - Gonzalez-Izquierdo A 
+              - Direk K
+              - Bhatti O 
+              - Husain S 
+              - Sutaria S 
+              - Hingorani M 
+              - Nitsch D 
+              - Parisinos C 
+              - Lumbers T 
+              - Mathur R 
+              - Sofat R 
+              - Casas JP
+              - Wong I 
+              - Hamingway H 
+              - Hingorani A
+        publication:
+          type: array
+          items:
+            type: string
+            example: 'Kuan V., Denaxas S., Gonzalez-Izquierdo A. et al. A chronological map of 308 physical and mental health conditions from 4 million individuals in the National Health Service. The Lancet Digital Health - DOI: 10.1016/S2589-7500(19)30012-3'
+        status:
+          type: string
+          example: FINAL
+        date:
+          type: string
+          example: 2019/05/20
+        modifiedDate:
+          type: string
+          example: 2019/05/20
+        version:
+          type: integer
+          example: 1
+        provenance:
+          type: string
+          format: url
+        remarks:
+          type: string
+      required:
+        - name
+        - id
+        - type
+        - author
+        - status
+        - version
+    shortuuid:
+      type: string
+      title: shortuuid
+      pattern: '^([23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz])+'      
+    PhenotypeContent:
+      description: Model having a phenotype content
+      type: object
+      properties:
+        sectionTitle:
+          type: string
+          example: 
+        sectionDescription:
+          type: string
+        subSectionDescription:
+          type: string
+        codeLists:
+          type: array
+          items:
+            $ref: '#/components/schemas/CodeLists'
+        implementation: 
+          $ref: '#/components/schemas/Implementation'
+        publications: 
+          type: array
+          items: 
+            $ref: '#/components/schemas/Publication'
+    CodeLists:
+      description: Model having code list content
+      type: object
+      properties:
+        title:
+          type: string 
+          example: Primary Care
+        typedescription:
+          type: string
+          example:  null    
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/CodeListTable'
+    CodeListTable:
+      description: Model having a codelist data table
+      type: object
+      properties:
+        title:
+          type: string
+        tableDescription:
+          type: string
+        fieldNames:
+          type: array
+          items:
+            type: string
+        tableData:    
+          type: array
+          items:
+            type: array
+            items:
+              type: string
+    Implementation:
+      description: Model having implementation details
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        linktocode:
+          type: string
+          format: url
+    Publication:
+      description: Model having publications details
+      type: object
+      properties:
+        reference:
+          type: string
+        linktoaccess:
+          type: string
+          format: url
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+      required:
+        - code
+        - message
