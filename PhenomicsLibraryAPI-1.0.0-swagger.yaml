@@ -18,6 +18,9 @@ servers:
     description: Production server
 tags: 
   - name: Phenomics
+    description: All operations about Phenotype definitions
+  - name: User
+    description: All User management operations 
 paths:
   /phenotypes:
     get:
@@ -161,6 +164,31 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+    put:
+      tags:
+        - Phenomics
+      summary: Update Phenotype
+      description: Updats a specific phenotype from library
+      operationId: update-phenotype
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: The ID of the phenotype
+          schema: 
+            type: string
+            example: 
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Phenotype'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/Phenotype'    
+      responses:
+        200:
+          description: Phenotype updated or created
     delete:
       tags:
         - Phenomics
@@ -190,6 +218,136 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /user:
+    post:
+      tags:
+        - User
+      summary: Create User
+      description: Creates a user account for using Phenomics library.
+      operationId: create-User
+      responses:
+        default:
+          description: User account created successfully
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+        description: Created user object
+        required: true
+  /user/login:
+    get:
+      tags:
+        - User
+      summary: Logs user into the system
+      description: logs in user into the Phenomics Library
+      operationId: login-User
+      parameters:
+        - name: username
+          in: query
+          description: The user name for login
+          required: true
+          schema:
+            type: string
+        - name: password
+          in: query
+          description: The password for login 
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful logged into Phenomics Library
+          content:
+            application/json:
+              schema:
+                type: string
+            application/xml:
+              schema:
+                type: string
+        '400':
+          description: Invalid username/password given
+  /user/logout:
+    get:
+      tags:
+        - User
+      summary: Logs out current logged in user session of Phenomics Library
+      description: logs out user from Phenomics Library
+      operationId: logout-User
+      responses:
+        '200':
+          description: successfully logged out from Phenomics Library 
+  '/user/{username}':
+    get:
+      tags:
+        - User
+      summary: Get user details by user name 
+      description: Gives user derails for a given user name
+      operationId: get-UserByName
+      parameters:
+        - name: username
+          in: path
+          description: The name that needs to be fetched. 
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successfully retrieved user details 
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Invalid username supplied
+        '404':
+          description: User not found
+    put:
+      tags:
+        - User
+      summary: Updated user details
+      description: This will allow to update details of the user and applicable to only the logged in user.
+      operationId: update-User
+      parameters:
+        - name: username
+          in: path
+          description: name that need to be updated
+          required: true
+          schema:
+            type: string
+      responses:
+        '400':
+          description: Invalid user supplied
+        '404':
+          description: User not found
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+        description: Updated user object
+        required: true
+    delete:
+      tags:
+        - User
+      summary: Deletes a user
+      description: This will allow to detele the user account and this can only be done by the logged in user.
+      operationId: delete-User
+      parameters:
+        - name: username
+          in: path
+          description: The name that needs to be deleted
+          required: true
+          schema:
+            type: string
+      responses:
+        '400':
+          description: Invalid username supplied
+        '404':
+          description: User not found              
 components:
   schemas: 
     SearchResults:
@@ -403,3 +561,25 @@ components:
       required:
         - code
         - message
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        username:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+        phone:
+          type: string
+        userStatus:
+          type: integer
+          format: int32
+          description: User Status    
